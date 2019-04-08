@@ -43,8 +43,30 @@ def add_patient():
     if input('Do you want to assign a primary care doctor (Y/N)? ').lower() in ('y', 'yes'):
         params['primary_care_doctor'] = pick_primary_care_doctor()
 
-    new_doc = db.Patient(**params)
-    new_doc.save()
+    new_patient = db.Patient(**params)
+    new_patient.save()
+
+
+def add_procedure():
+    """User Interface for adding a new procedure to the database."""
+    params = dict()
+    params['name'] = input("Name? ")
+    params['min_cost'] = input("Minimum Cost? ")
+    params['max_cost'] = input("Maximum Cost? ")
+
+    if input('Do you want to assign a pre procedure checklist (Y/N)? ').lower() in ('y', 'yes'):
+        params['pre_procedure_checklist'] = choose_procedure_checklist()
+
+    new_procedure = db.Procedure(**params)
+    new_procedure.save()
+
+
+def add_performed_procedure():
+    """User Interface for adding a new performed procedure to the database."""
+
+
+def choose_procedure_checklist(): #TODO
+    pass
 
 
 def pick_primary_care_doctor():
@@ -63,7 +85,7 @@ def pick_primary_care_doctor():
         while True:
             doc_choice = input('Choose by number? ')
             try:
-                return(docs[int(doc_choice)])
+                return docs[int(doc_choice)]
             except (IndexError, ValueError):
                 print('Invalid choice')
     elif docs.count() == 1:
@@ -75,6 +97,7 @@ def pick_primary_care_doctor():
         if input('Skip choosing primary care doctor (Y/N)').lower() in ('y', 'yes'):
             return None
         return pick_primary_care_doctor()
+
 
 def end_program():
     """Exit the program"""

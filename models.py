@@ -50,7 +50,8 @@ class Patient(db.Model):
         table_name = 'patients'
         database = database
 
-class Performed_procedure(db.Model):
+
+class PerformedProcedure(db.Model):
     """
     ORM model of performed_procedures table
     """
@@ -82,6 +83,6 @@ if __name__ == "__main__":
         print("Patient table already exists!")
 
     try:
-        Performed_procedure.create_table()
+        PerformedProcedure.create_table()
     except db.OperationalError:
         print("performed_procedures table already exists!")
