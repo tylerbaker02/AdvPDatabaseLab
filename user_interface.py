@@ -55,7 +55,7 @@ def add_procedure():
     params['max_cost'] = input("Maximum Cost? ")
 
     if input('Do you want to assign a pre procedure checklist (Y/N)? ').lower() in ('y', 'yes'):
-        params['pre_procedure_checklist'] = choose_procedure_checklist()
+        params['pre_procedure_checklist'] = input("Checklist: ")
 
     new_procedure = db.Procedure(**params)
     new_procedure.save()
@@ -63,10 +63,69 @@ def add_procedure():
 
 def add_performed_procedure():
     """User Interface for adding a new performed procedure to the database."""
+    params = dict()
+    params['patient'] = pick_patient()
+    params['doctor'] = pick_primary_care_doctor()
+    params['procedure'] = pick_procedure()
+    params['procedure_date'] = input('Date of procedure (MM/DD/YYYY)? ')
+    if input('Do you want to assign notes (Y/N)? ').lower() in ('y', 'yes'):
+        params['notes'] = input('Notes: ')
+
+    new_performed_procedure = db.PerformedProcedure(**params)
+    new_performed_procedure.save()
 
 
-def choose_procedure_checklist(): #TODO
-    pass
+def pick_procedure():
+    pro_name = input('Identify a procedure by name or press enter to display all procedures? ')
+    if pro_name:
+        pros = db.Procedure.select().where(db.Procedure.name == pro_name)
+    else:
+        pros = db.Procedure.select()
+    if pros.count() > 1:
+        for i, pat in enumerate(pros):
+            print(f'{i}. {str(pro)}')
+        while True:
+            pro_choice = input('Choose by number? ')
+            try:
+                return pros[int(pro_choice)]
+            except (IndexError, ValueError):
+                print('Invalid choice')
+    elif pros.count() == 1:
+        print('Only one matching procedure found')
+        print(f'Assigning {str(pro)} as procedure')
+        return pros[0]
+    else:
+        print('No procedure found with that name.')
+        if input('Skip choosing procedure (Y/N)').lower() in ('y', 'yes'):
+            return None
+        return pick_patient()
+
+
+def pick_patient(assign=True):
+    pat_name = input('Identify a patient by last name or press enter to display all patients? ')
+    if pat_name:
+        pats = db.Patient.select().where(db.Patient.last_name == pat_name)
+    else:
+        pats = db.Patient.select()
+    if pats.count() > 1:
+        for i, pat in enumerate(pats):
+            print(f'{i}. {str(pat)}')
+        while True:
+            pat_choice = input('Choose by number? ')
+            try:
+                return pats[int(pat_choice)]
+            except (IndexError, ValueError):
+                print('Invalid choice')
+    elif pats.count() == 1:
+        print('Only one matching Patient found')
+        if assign:
+            print(f'Assigning {str(pat)} as patient')
+        return pats[0]
+    else:
+        print('No patient found with that name.')
+        if input('Skip choosing patient (Y/N)').lower() in ('y', 'yes'):
+            return None
+        return pick_patient()
 
 
 def pick_primary_care_doctor():
@@ -99,6 +158,13 @@ def pick_primary_care_doctor():
         return pick_primary_care_doctor()
 
 
+def patient_lookup():
+    """User Interface for looking up a patient."""
+    pat = pick_patient(assign=False)
+    print('\n' + pat.all_info())
+    if pat.primary_care_doctor != '':
+        print(pat.primary_care_doctor.all_info())
+
 def end_program():
     """Exit the program"""
     sys.exit()
@@ -106,9 +172,9 @@ def end_program():
 
 menu_dict = {'1': add_doctor,
              '2': add_patient,
-             '3': None,
-             '4': None,
-             '5': None,
+             '3': add_procedure,
+             '4': add_performed_procedure,
+             '5': patient_lookup,
              '6': None,
              '7': None,
              '8': end_program}

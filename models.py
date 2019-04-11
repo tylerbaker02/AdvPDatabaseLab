@@ -20,6 +20,15 @@ class Procedure(db.Model):
         table_name = 'procedures'
         database = database
 
+    def __str__(self):
+        return f'{self.name} (${self.min_cost} - ${self.max_cost})'
+
+    def all_info(self):
+        to_return = f'Procedure {self.id}: {str(self)}'
+        if self.pre_procedure_checklist != '':
+            to_return += f'\n    {self.pre_procedure_checklist}'
+        return to_return
+
 
 class Doctor(db.Model):
     """
@@ -32,6 +41,15 @@ class Doctor(db.Model):
     class Meta:
         table_name = 'doctors'
         database = database
+
+    def __str__(self):
+        return f'Dr. {self.first_name} {self.last_name}'
+
+    def all_info(self):
+        to_return = f'Doctor {self.id}: {str(self)}'
+        if self.primary_office != '':
+            to_return += f'\n    Primary Office: {self.primary_office}'
+        return to_return
 
 
 class Patient(db.Model):
@@ -49,6 +67,23 @@ class Patient(db.Model):
     class Meta:
         table_name = 'patients'
         database = database
+
+    def __str__(self):
+        return f'{self.first_name} {self.last_name}'
+
+    def all_info(self):
+        to_return = f'Patient {self.id}: {str(self)}'
+        if self.address != '':
+            to_return += f'\n    Address: {self.address}'
+        if self.phone_number != '':
+            to_return += f'\n    Phone Number: {self.phone_number}'
+        if self.emergency_contact != '':
+            to_return += f'\n    Emergency Contact: {self.emergency_contact}'
+        if self.emergency_phone != '':
+            to_return += f'\n    Emergency Phone: {self.emergency_phone}'
+        if self.primary_care_doctor != '':
+            to_return += f'\n    Primary Care Doctor: {self.primary_care_doctor}'
+        return to_return
 
 
 class PerformedProcedure(db.Model):
