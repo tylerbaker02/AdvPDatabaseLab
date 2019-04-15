@@ -51,8 +51,20 @@ def add_procedure():
     """User Interface for adding a new procedure to the database."""
     params = dict()
     params['name'] = input("Name? ")
-    params['min_cost'] = input("Minimum Cost? ")
-    params['max_cost'] = input("Maximum Cost? ")
+    while True:
+        try:
+            params['min_cost'] = float(input('Minimum Cost? '))
+        except (IndexError, ValueError):
+            print('Please input a number')
+        else:
+            break
+    while True:
+        try:
+            params['max_cost'] = input("Maximum Cost? ")
+        except (IndexError, ValueError):
+            print('Please input a number')
+        else:
+            break
 
     if input('Do you want to assign a pre procedure checklist (Y/N)? ').lower() in ('y', 'yes'):
         params['pre_procedure_checklist'] = input("Checklist: ")
@@ -92,7 +104,7 @@ def pick_procedure():
                 print('Invalid choice')
     elif pros.count() == 1:
         print('Only one matching procedure found')
-        print(f'Assigning {str(pro)} as procedure')
+        print(f'Assigning {str(pros[0])} as procedure')
         return pros[0]
     else:
         print('No procedure found with that name.')
@@ -119,7 +131,7 @@ def pick_patient(assign=True):
     elif pats.count() == 1:
         print('Only one matching Patient found')
         if assign:
-            print(f'Assigning {str(pat)} as patient')
+            print(f'Assigning {str(pats[0])} as patient')
         return pats[0]
     else:
         print('No patient found with that name.')
@@ -164,6 +176,9 @@ def patient_lookup():
     print('\n' + pat.all_info())
     if pat.primary_care_doctor != '':
         print(pat.primary_care_doctor.all_info())
+    for procedure in pat.procedure_history:
+        print(procedure.all_info())
+
 
 def end_program():
     """Exit the program"""

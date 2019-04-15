@@ -21,10 +21,12 @@ class Procedure(db.Model):
         database = database
 
     def __str__(self):
-        return f'{self.name} (${self.min_cost} - ${self.max_cost})'
+        return f'{self.name}'
 
     def all_info(self):
         to_return = f'Procedure {self.id}: {str(self)}'
+        if self.min_cost and self.max_cost:
+            to_return += f'\n    ${self.min_cost} - ${self.max_cost}'
         if self.pre_procedure_checklist != '':
             to_return += f'\n    {self.pre_procedure_checklist}'
         return to_return
@@ -99,6 +101,19 @@ class PerformedProcedure(db.Model):
     class Meta:
         table_name = 'performed_procedures'
         database = database
+
+    def __str__(self):
+        return f'{self.procedure}'
+
+    def all_info(self):
+        to_return = f'Performed Procedure {self.id}: {str(self)}'
+        to_return += f'\n    {self.patient}'
+        to_return += f'\n    {self.doctor}'
+        if self.procedure_date != '':
+            to_return += f'\n    Address: {self.procedure_date}'
+        if self.notes != '':
+            to_return += f'\n    Phone Number: {self.notes}'
+        return to_return
 
 
 if __name__ == "__main__":
