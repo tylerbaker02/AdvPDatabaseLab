@@ -116,6 +116,54 @@ class PerformedProcedure(db.Model):
         return to_return
 
 
+class Medication(db.Model):
+    """
+    ORM model of medications table
+    """
+    name = db.CharField()
+    common_name = db.CharField()
+    notes = db.TextField(default='')
+
+    class Meta:
+        table_name = 'medications'
+        database = database
+
+    def __str__(self):
+        return f'{self.name}'
+
+    def all_info(self):
+        to_return = f'Medication {self.id}: {str(self)}'
+        to_return += f'\n    AKA {self.common_name}'
+        if self.notes != '':
+            to_return += f'\n    {self.notes}'
+        return to_return
+
+
+class AssignedMedication(db.Model):
+    """
+    ORM model of assigned_medications table
+    """
+    patient = db.ForeignKeyField(Patient, backref='procedure_history')
+    medication = db.ForeignKeyField(Medication, backref='procedure_history')
+    dosage = db.CharField()
+    date_added = db.DateField(default=None)
+
+    class Meta:
+        table_name = 'assigned_medications'
+        database = database
+
+    def __str__(self):
+        return f'{self.medication}'
+
+    def all_info(self):
+        to_return = f'Performed Procedure {self.id}: {str(self)}'
+        to_return += f'\n    {self.patient}'
+        to_return += f'\n    {self.dosage}'
+        if self.date_added != '':
+            to_return += f'\n    Address: {self.date_added}'
+        return to_return
+
+
 if __name__ == "__main__":
     try:
         Procedure.create_table()
@@ -134,5 +182,15 @@ if __name__ == "__main__":
 
     try:
         PerformedProcedure.create_table()
+    except db.OperationalError:
+        print("performed_procedures table already exists!")
+
+    try:
+        Medication.create_table()
+    except db.OperationalError:
+        print("performed_procedures table already exists!")
+
+    try:
+        AssignedMedication.create_table()
     except db.OperationalError:
         print("performed_procedures table already exists!")
