@@ -1,16 +1,28 @@
+""" ORM Models for a patient database.  Also includes code to build the database if it doesn't exist.
+
+
+Author: Tyler Baker
+Class: CSI-260-01
+Assignment: Database Lab
+
+Certification of Authenticity:
+I certify that this is entirely my own work, except where I have given
+fully-documented references to the work of others. I understand the definition
+and consequences of plagiarism and acknowledge that the assessor of this
+assignment may, for the purpose of assessing this assignment:
+- Reproduce this assignment and provide a copy to another member of academic
+- staff; and/or Communicate a copy of this assignment to a plagiarism checking
+- service (which may then retain a copy of this assignment on its database for
+- the purpose of future plagiarism checking)
+"""
 import peewee as db
-"""
-ORM Models for a patient database.  Also includes code to build the database
-if it doesn't exist.
-"""
+
 
 database = db.SqliteDatabase("patient_database.sqlite")
 
 
 class Procedure(db.Model):
-    """
-    ORM model of procedures table
-    """
+    """ORM model of procedures table."""
     name = db.CharField()
     min_cost = db.DecimalField(default=None)
     max_cost = db.DecimalField(default=None)
@@ -33,9 +45,7 @@ class Procedure(db.Model):
 
 
 class Doctor(db.Model):
-    """
-    ORM model of doctors table
-    """
+    """ORM model of doctors table."""
     first_name = db.CharField()
     last_name = db.CharField()
     primary_office = db.CharField(default='')
@@ -55,9 +65,7 @@ class Doctor(db.Model):
 
 
 class Patient(db.Model):
-    """
-    ORM model of patients table
-    """
+    """ORM model of patients table."""
     first_name = db.CharField()
     last_name = db.CharField()
     address = db.CharField(default='')
@@ -89,12 +97,10 @@ class Patient(db.Model):
 
 
 class PerformedProcedure(db.Model):
-    """
-    ORM model of performed_procedures table
-    """
-    patient = db.ForeignKeyField(Patient, backref='procedure_history')
-    doctor = db.ForeignKeyField(Doctor, backref='procedure_history')
-    procedure = db.ForeignKeyField(Procedure, backref='procedure_history')
+    """ORM model of performed_procedures table."""
+    patient = db.ForeignKeyField(Patient, backref='procedure_history', default=None)
+    doctor = db.ForeignKeyField(Doctor, backref='procedure_history', default=None)
+    procedure = db.ForeignKeyField(Procedure, backref='procedure_history', default=None)
     procedure_date = db.DateField(default=None)
     notes = db.TextField(default='')
 
@@ -133,18 +139,16 @@ class Medication(db.Model):
 
     def all_info(self):
         to_return = f'Medication {self.id}: {str(self)}'
-        to_return += f'\n    AKA {self.common_name}'
+        to_return += f'\n    AKA: {self.common_name}'
         if self.notes != '':
             to_return += f'\n    {self.notes}'
         return to_return
 
 
 class AssignedMedication(db.Model):
-    """
-    ORM model of assigned_medications table
-    """
-    patient = db.ForeignKeyField(Patient, backref='procedure_history')
-    medication = db.ForeignKeyField(Medication, backref='procedure_history')
+    """ORM model of assigned_medications table."""
+    patient = db.ForeignKeyField(Patient, backref='medication_history', default=None)
+    medication = db.ForeignKeyField(Medication, backref='medication_history', default=None)
     dosage = db.CharField()
     date_added = db.DateField(default=None)
 
@@ -156,9 +160,10 @@ class AssignedMedication(db.Model):
         return f'{self.medication}'
 
     def all_info(self):
-        to_return = f'Performed Procedure {self.id}: {str(self)}'
-        to_return += f'\n    {self.patient}'
-        to_return += f'\n    {self.dosage}'
+        to_return = f'Assigned Medication {self.id}: {str(self)}'
+        to_return += f'\n    AKA: {self.medication.common_name}'
+        to_return += f'\n    Patient: {self.patient}'
+        to_return += f'\n    Dosage: {self.dosage}'
         if self.date_added != '':
             to_return += f'\n    Address: {self.date_added}'
         return to_return

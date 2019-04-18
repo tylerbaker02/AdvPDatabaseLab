@@ -1,5 +1,19 @@
 """User Interface for medical database
 
+
+Author: Tyler Baker
+Class: CSI-260-01
+Assignment: Database Lab
+
+Certification of Authenticity:
+I certify that this is entirely my own work, except where I have given
+fully-documented references to the work of others. I understand the definition
+and consequences of plagiarism and acknowledge that the assessor of this
+assignment may, for the purpose of assessing this assignment:
+- Reproduce this assignment and provide a copy to another member of academic
+- staff; and/or Communicate a copy of this assignment to a plagiarism checking
+- service (which may then retain a copy of this assignment on its database for
+- the purpose of future plagiarism checking)
 """
 
 import models as db
@@ -19,8 +33,7 @@ Choose:
 
 
 def add_doctor():
-    """User Interface for adding a new doctor to the database.
-    """
+    """User Interface for adding a new doctor to the database."""
     params = dict()
     params['first_name'] = input('First Name? ')
     params['last_name'] = input('Last Name? ')
@@ -30,8 +43,7 @@ def add_doctor():
 
 
 def add_patient():
-    """User Interface for adding a new patient to the database.
-    """
+    """User Interface for adding a new patient to the database."""
     params = dict()
     params['first_name'] = input('First Name? ')
     params['last_name'] = input('Last Name? ')
@@ -87,14 +99,42 @@ def add_performed_procedure():
     new_performed_procedure.save()
 
 
+def add_medication():
+    """User Interface for adding a new medication to the database."""
+    params = dict()
+    params['name'] = input("Name? ")
+    params['common_name'] = input("Common name? ")
+
+    if input('Do you want to add notes (Y/N)? ').lower() in ('y', 'yes'):
+        params['notes'] = input("Checklist: ")
+
+    new_medication = db.Medication(**params)
+    new_medication.save()
+
+
+def add_assigned_medication():
+    """User Interface for adding a new applied medication to the database."""
+    params = dict()
+    params['patient'] = pick_patient()
+    params['medication'] = pick_medication()
+    params['dosage'] = input('Dosage? ')
+    params['date_added'] = input('Date Added (MM/DD/YYYY)? ')
+    if input('Do you want to assign notes (Y/N)? ').lower() in ('y', 'yes'):
+        params['notes'] = input('Notes: ')
+
+    new_assigned_medication = db.AssignedMedication(**params)
+    new_assigned_medication.save()
+
+
 def pick_procedure():
+    """User interface for selecting a procedure."""
     pro_name = input('Identify a procedure by name or press enter to display all procedures? ')
     if pro_name:
         pros = db.Procedure.select().where(db.Procedure.name == pro_name)
     else:
         pros = db.Procedure.select()
     if pros.count() > 1:
-        for i, pat in enumerate(pros):
+        for i, pro in enumerate(pros):
             print(f'{i}. {str(pro)}')
         while True:
             pro_choice = input('Choose by number? ')
@@ -114,6 +154,7 @@ def pick_procedure():
 
 
 def pick_patient(assign=True):
+    """User interface for selecting a patient."""
     pat_name = input('Identify a patient by last name or press enter to display all patients? ')
     if pat_name:
         pats = db.Patient.select().where(db.Patient.last_name == pat_name)
@@ -141,10 +182,7 @@ def pick_patient(assign=True):
 
 
 def pick_primary_care_doctor():
-    """User Interface for selecting a primary care doctor.
-
-    Return: A Doctor object.  Returns None if no doctor selected.
-    """
+    """User Interface for selecting a primary care doctor."""
     doc_name = input('Identify a Doctor by last name or press enter to display all doctors? ')
     if doc_name:
         docs = db.Doctor.select().where(db.Doctor.last_name == doc_name)
@@ -170,6 +208,36 @@ def pick_primary_care_doctor():
         return pick_primary_care_doctor()
 
 
+def pick_medication():
+    """User Interface for selecting a medication."""
+    med_name = input('Identify medication by name, common name, or press enter to display all medications? ')
+    if med_name:
+        if db.Medication.select().where(db.Medication.name == med_name):
+            meds = db.Medication.select().where(db.Medication.name == med_name)
+        else:
+            meds = db.Medication.select().where(db.Medication.common_name == med_name)
+    else:
+        meds = db.Medication.select()
+    if meds.count() > 1:
+        for i, med in enumerate(meds):
+            print(f'{i}. {med.name}')
+        while True:
+            med_choice = input('Choose by number? ')
+            try:
+                return meds[int(med_choice)]
+            except (IndexError, ValueError):
+                print('Invalid choice')
+    elif meds.count() == 1:
+        print('Only one matching medication found')
+        print(f'Assigning {meds[0].name} to patient')
+        return meds[0]
+    else:
+        print('No medications found with that name.')
+        if input('Skip choosing medications (Y/N)').lower() in ('y', 'yes'):
+            return None
+        return pick_medication()
+
+
 def patient_lookup():
     """User Interface for looking up a patient."""
     pat = pick_patient(assign=False)
@@ -178,10 +246,12 @@ def patient_lookup():
         print(pat.primary_care_doctor.all_info())
     for procedure in pat.procedure_history:
         print(procedure.all_info())
+    for medication in pat.medication_history:
+        print(medication.all_info())
 
 
 def end_program():
-    """Exit the program"""
+    """Exit the program."""
     sys.exit()
 
 
@@ -190,8 +260,8 @@ menu_dict = {'1': add_doctor,
              '3': add_procedure,
              '4': add_performed_procedure,
              '5': patient_lookup,
-             '6': None,
-             '7': None,
+             '6': add_medication,
+             '7': add_assigned_medication,
              '8': end_program}
 
 while True:
@@ -200,5 +270,3 @@ while True:
         menu_dict[user_choice]()
     else:
         print('Not a valid choice')
-
-
